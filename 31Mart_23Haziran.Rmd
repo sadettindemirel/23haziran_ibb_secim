@@ -1,0 +1,218 @@
+---
+title: "23 Haziran ve 31 Mart IBB Seçimleri Analiz"
+output: html_notebook
+---
+
+#### 1.Paketler
+
+```{r warning=FALSE}
+library(tidyverse)
+library(forcats)
+library(tmap)
+library(sp)
+library(leaflet)
+```
+
+#### 2.Veriyi düzenleyelim
+
+```{r}
+#veriler hali hazırda r'ın veri formatında
+secim <- readRDS("secim.rds")
+katilim <- readRDS("katilim.rds")
+
+#grafiklerde kullanacağımız fontu belirledik
+windowsFonts("Proxima Nova" = windowsFont("Proxima Nova"))
+
+#verilerde yer alan türkçe karakterler için
+Sys.setlocale("LC_CTYPE", "turkish")
+```
+
+
+#### 3. Görselleştirelim
+
+```{r}
+secim %>% ggplot() + geom_line(aes(chp, ilçe),arrow = arrow(length = unit(1.5, "mm"), type = "closed", ends = "last"))
+```
+
+
+```{r}
+secim %>% ggplot() + geom_line(aes(chp, ilçe),arrow = arrow(length = unit(1.5, "mm"), type = "closed", ends = "last"))
+```
+
+***Biraz daha düzenleyelim ve cilalayalım**
+
+```{r}
+secim %>% ggplot() + 
+  geom_line(aes(chp, fct_reorder(ilçe, chp)),arrow = arrow(length = unit(1.5, "mm"), type = "closed", ends = "last"))+
+  geom_text(aes(x = chp, y = ilçe,label = round(chp, 1), hjust = ifelse(secim_tarih == "2019-06-23",-0.3,1.2)),size = 3,color= "gray25")
+```
+
+
+```{r}
+secim %>% ggplot() + 
+  geom_line(aes(chp, fct_reorder(ilçe, chp)),arrow = arrow(length = unit(1.5, "mm"), type = "closed", ends = "last"))+
+  geom_text(aes(x = chp, y = ilçe,label = round(chp, 1), hjust = ifelse(secim_tarih == "2019-06-23",-0.3,1.2)),size = 3,color= "gray25")
+```
+
+**Özel tema oluşturalım ve uygulayalım**
+
+```{r}
+theme_custom1 <- function() {
+  theme_minimal() +
+    theme(
+      text = element_text(family = "Proxima Nova", color = "gray25"),
+      plot.title = element_text(face = "bold",size = 14),
+      plot.subtitle = element_text(size = 13),
+      axis.text.x= element_text(size=11),
+      axis.text.y = element_text(size=11),
+      plot.caption = element_text(size = 11, color = "gray30"),
+      plot.background = element_rect(fill = "#f6f5f5"),
+      legend.position = "none",
+      strip.background = element_rect(colour = "#d9d9d9", fill = "#d9d9d9"),
+      strip.text.x = element_text(size = 11, colour = "gray25", face = "bold"))
+  
+}
+```
+
+**Temayı grafige uygulayalım**
+
+```{r}
+secim %>% ggplot() + 
+  geom_line(aes(chp, fct_reorder(ilçe, chp)),arrow = arrow(length = unit(1.5, "mm"), type = "closed", ends = "last"))+
+  geom_text(aes(x = chp, y = ilçe,label = round(chp, 1), hjust = ifelse(secim_tarih == "2019-06-23",-0.3,1.2)),size = 3,color= "gray25")+
+  theme_custom1()
+```
+
+```{r}
+secim %>% ggplot() + 
+  geom_line(aes(chp, fct_reorder(ilçe, chp)),arrow = arrow(length = unit(1.5, "mm"), type = "closed", ends = "last"))+
+  geom_text(aes(x = chp, y = ilçe,label = round(chp, 1), hjust = ifelse(secim_tarih == "2019-06-23",-0.3,1.2)),size = 3,color= "gray25")+
+  theme_custom1()
+```
+
+**Başlık ve gerekli bazı detayları ekleyelim**
+Görülüyor ki Ekrem İmamoğlu tüm ilçelerde oyunu arttırmış
+```{r}
+secim %>% ggplot() + 
+  geom_line(aes(chp, fct_reorder(ilçe, chp)),arrow = arrow(length = unit(1.5, "mm"), type = "closed", ends = "last"))+
+  geom_text(aes(x = chp, y = ilçe,label = round(chp, 1), hjust = ifelse(secim_tarih == "2019-06-23",-0.3,1.2)),size = 3.8,color= "gray25")+
+  labs(x = "alınan oy (%)",y ="", 
+       title = "Ekrem İmamoglu  23 Haziran'da tüm ilçelerde oyunu arttırdı", 
+       subtitle = "31 Mart ---> 23 Haziran", 
+       caption = "@demirelsadettin")+
+  theme_custom1()+
+  coord_cartesian(xlim= c(27, 85))
+```
+
+
+```{r}
+secim %>% ggplot() + 
+  geom_line(aes(chp, fct_reorder(ilçe, chp)),arrow = arrow(length = unit(1.5, "mm"), type = "closed", ends = "last"))+
+  geom_text(aes(x = chp, y = ilçe,label = round(chp, 1), hjust = ifelse(secim_tarih == "2019-06-23",-0.3,1.2)),size = 3.8,color= "gray25")+
+  labs(x = "alınan oy (%)",y ="", 
+       title = "Ekrem İmamoglu  23 Haziran'da tüm ilçelerde oyunu arttırdı", 
+       subtitle = "31 Mart ---> 23 Haziran", 
+       caption = "@demirelsadettin")+
+  theme_custom1()+
+  coord_cartesian(xlim= c(27, 85))
+```
+
+
+Görülüyor ki Binali Yıldırım tüm ilçelerde oy kaybı yaşamış
+```{r}
+secim %>% ggplot() + 
+  geom_line(aes(akp, fct_reorder(ilçe, akp)),arrow = arrow(length = unit(1.5, "mm"), type = "closed", ends = "first"))+
+  geom_text(aes(x = akp, y = ilçe,label = round(akp, 1), hjust = ifelse(secim_tarih == "2019-03-31",-0.5,1.5)),size = 3.8,color= "gray25")+
+  labs(x = "alınan oy (%)",y ="", 
+       title = "Binali Yıldırım  23 Haziran'da tüm ilçelerde oy kaybı yaşadı", 
+       subtitle = "31 Mart ---> 23 Haziran", 
+       caption = "@demirelsadettin")+ theme_custom1() + coord_cartesian(xlim= c(13, 70))
+```
+
+
+```{r}
+secim %>% ggplot() + 
+  geom_line(aes(akp, fct_reorder(ilçe, akp)),arrow = arrow(length = unit(1.5, "mm"), type = "closed", ends = "first"))+
+  geom_text(aes(x = akp, y = ilçe,label = round(akp, 1), hjust = ifelse(secim_tarih == "2019-03-31",-0.5,1.5)),size = 3.8,color= "gray25")+
+  labs(x = "alınan oy (%)",y ="", 
+       title = "Binali Yıldırım  23 Haziran'da tüm ilçelerde oy kaybı yaşadı", 
+       subtitle = "31 Mart ---> 23 Haziran", 
+       caption = "@demirelsadettin")+ theme_custom1() + coord_cartesian(xlim= c(13, 70))
+```
+
+#### 4. Veriyi biraz yoğuralım
+
+```{r}
+secim_tidy <- secim %>% select(1,2,3,5) %>% gather(parti, oy_yüzde, - ilçe, -secim_tarih)
+
+```
+
+```{r}
+secim_tidy
+```
+
+
+```{r}
+secim_tidy2<- secim_tidy %>% spread(secim_tarih,oy_yüzde) %>% mutate(fark = `2019-06-23` - `2019-03-31`)
+saveRDS(secim_tidy2,"secim_tidy.rds")
+
+```
+
+```{r}
+secim_tidy2
+```
+
+
+Görselleştirelim
+```{r}
+secim_tidy2%>% ggplot(aes(ilçe, fark, fill = parti))+
+  geom_col()+coord_flip()+theme_custom1()+
+  labs(x = "", y ="", title = "31 Mart'a göre tüm ilçelerde İmamoğlu oyunu arttırıken, Yıldırım ise oy kaybı yaşadı", subtitle = "Oy farkı yüzdelik (%) olarak gösterilmektedir", caption = "@demirelsadettim")+
+  scale_fill_manual(values = c("akp" = "#fab005","chp"="#fa5252"))+
+  geom_text(aes(x = ilçe, y = fark ,label = round(fark, 1),hjust = ifelse(fark >0 ,-0.2,1.2)),size = 4,color= "gray25")
+```
+
+
+```{r}
+secim_tidy2%>% ggplot(aes(ilçe, fark, fill = parti))+
+  geom_col()+coord_flip()+theme_custom1()+
+  labs(x = "", y ="", title = "31 Mart'a göre tüm ilçelerde İmamoğlu oyunu arttırıken, Yıldırım ise oy kaybı yaşadı", subtitle = "Oy farkı yüzdelik (%) olarak gösterilmektedir", caption = "@demirelsadettim")+
+  scale_fill_manual(values = c("akp" = "#fab005","chp"="#fa5252"))+
+  geom_text(aes(x = ilçe, y = fark ,label = round(fark, 1),hjust = ifelse(fark >0 ,-0.2,1.2)),size = 4,color= "gray25")
+```
+
+```{r}
+secim_tidy2%>% ggplot(aes(fct_reorder(ilçe, fark, max),fark, fill = parti))+
+  geom_col()+coord_flip()+theme_custom1()+labs(x = "", y ="", title = "31 Mart'a göre tüm ilçelerde İmamoğlu oyunu arttırıken, Yıldırım ise oy kaybı yaşadı", subtitle = "Oy farkı yüzdelik (%) olarak gösterilmektedir", caption = "@demirelsadettim")+
+  scale_fill_manual(values = c("akp" = "#fab005","chp"="#fa5252"))+
+  geom_text(aes(x = ilçe, y = fark ,label = round(fark, 1),hjust = ifelse(fark >0 ,-0.2,1.2)),size = 3.8,color= "gray25")
+```
+
+
+```{r}
+secim_tidy2%>% ggplot(aes(fct_reorder(ilçe, fark, max),fark, fill = parti))+
+  geom_col()+coord_flip()+theme_custom1()+labs(x = "", y ="", title = "31 Mart'a göre tüm ilçelerde İmamoğlu oyunu arttırıken, Yıldırım ise oy kaybı yaşadı", subtitle = "Oy farkı yüzdelik (%) olarak gösterilmektedir", caption = "@demirelsadettim")+
+  scale_fill_manual(values = c("akp" = "#fab005","chp"="#fa5252"))+
+  geom_text(aes(x = ilçe, y = fark ,label = round(fark, 1),hjust = ifelse(fark >0 ,-0.2,1.2)),size = 3.8,color= "gray25")
+```
+
+#### 5. Katılım oranları nasıl değişmiş bakalım
+
+```{r}
+katilim
+```
+
+```{r}
+katilim %>% ggplot(aes(fct_reorder(ilçe, degisim, max),degisim, fill = durum))+
+  geom_col()+coord_flip()+theme_custom1()+labs(x = "", y ="", title = "31 Marta göre tüm ilçelerde katılım oranı nasıl değişti?", subtitle = "Katılım oranı için 31 Mart kayıtlı seçmen sayısı kullanıldı.", caption = "@demirelsadettim - analizde geçersiz oy sayısı katılım oranına yansıtılmamıştır")+
+  geom_text(aes(x = ilçe, y = degisim ,label = round(degisim, 2),hjust = ifelse(degisim >0 ,-0.2,1.2)),size = 4,color= "gray25")+
+  scale_fill_manual(values = c("artti" ="#12b886", "azaldi" ="#fa5252"))
+```
+
+
+```{r}
+katilim %>% ggplot(aes(fct_reorder(ilçe, degisim, max),degisim, fill = durum))+
+  geom_col()+coord_flip()+theme_custom1()+labs(x = "", y ="", title = "31 Marta göre tüm ilçelerde katılım oranı nasıl değişti?", subtitle = "Katılım oranı için 31 Mart kayıtlı seçmen sayısı kullanıldı.", caption = "@demirelsadettim - analizde geçersiz oy sayısı katılım oranına yansıtılmamıştır")+
+  geom_text(aes(x = ilçe, y = degisim ,label = round(degisim, 2),hjust = ifelse(degisim >0 ,-0.2,1.2)),size = 4,color= "gray25")+
+  scale_fill_manual(values = c("artti" ="#12b886", "azaldi" ="#fa5252"))
+```
